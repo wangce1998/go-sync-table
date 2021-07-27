@@ -3,7 +3,6 @@ package main
 import (
 	"database/sql"
 	"fmt"
-	"io/ioutil"
 	"math"
 	"reflect"
 	"strconv"
@@ -199,7 +198,7 @@ func CYBatchCreate(stocks []Stock) int64 {
 	for _, stock := range stocks {
 		stock.CreatedAt = t
 		stock.UpdatedAt = t
-		
+
 		sqlStr += fmt.Sprintf(
 			"(%s, '%s', '%s', '%s', '%s', %s, '%s', %s, %s, %s),",
 			strconv.FormatInt(stock.ShopID, 10),
@@ -219,9 +218,6 @@ func CYBatchCreate(stocks []Stock) int64 {
 	stmt, err := cyDB.Exec(sqlStr)
 	if err != nil {
 		fmt.Println("批量新增错误:" + err.Error())
-		var d1 = []byte(sqlStr)
-		_ = ioutil.WriteFile("./sql.txt", d1, 0666)
-
 		return 0
 	}
 	num, err := stmt.RowsAffected()
