@@ -23,34 +23,6 @@ type connect struct {
 
 func Mysql() (baseDB *sql.DB, err error) {
 	mysql := connect{
-		HOST:      "sh-cdb-4lnrzka6.sql.tencentcdb.com",
-		PORT:      "59794",
-		DATABASE:  "HAJXC",
-		USERNAME:  "hadj",
-		PASSWORD:  "0Ln%1XKLqMClGiKF",
-		CHARSET:   "utf8mb4",
-		PARSETIME: "True",
-		Loc: "Asia%2FShanghai",
-	}
-	driver := mysql.USERNAME + ":" + mysql.PASSWORD + "@" + "tcp(" + mysql.HOST + ":" + mysql.PORT + ")/" + mysql.DATABASE + "?charset=" + mysql.CHARSET
-	if mysql.Loc != "" {
-		driver += "&loc=" + mysql.Loc
-	}
-	if mysql.PARSETIME != "" {
-		driver += "&parseTime=" + mysql.PARSETIME
-	}
-	db, err = sql.Open("mysql", driver)
-	if err != nil {
-		fmt.Printf("connect DB failed, err:%v\n", err)
-		return
-	}
-	db.SetMaxOpenConns(20)
-	db.SetMaxIdleConns(10)
-	return db, nil
-}
-
-func CYMysql() (baseDB *sql.DB, err error) {
-	mysql := connect{
 		HOST:      "192.168.2.5",
 		PORT:      "3306",
 		DATABASE:  "sync_stock",
@@ -77,12 +49,40 @@ func CYMysql() (baseDB *sql.DB, err error) {
 	return db, nil
 }
 
+func CYMysql() (baseDB *sql.DB, err error) {
+	mysql := connect{
+		HOST:      "sh-cdb-4lnrzka6.sql.tencentcdb.com",
+		PORT:      "59794",
+		DATABASE:  "HAJXC",
+		USERNAME:  "hadj",
+		PASSWORD:  "0Ln%1XKLqMClGiKF",
+		CHARSET:   "utf8mb4",
+		PARSETIME: "True",
+		Loc: "Asia%2FShanghai",
+	}
+	driver := mysql.USERNAME + ":" + mysql.PASSWORD + "@" + "tcp(" + mysql.HOST + ":" + mysql.PORT + ")/" + mysql.DATABASE + "?charset=" + mysql.CHARSET
+	if mysql.Loc != "" {
+		driver += "&loc=" + mysql.Loc
+	}
+	if mysql.PARSETIME != "" {
+		driver += "&parseTime=" + mysql.PARSETIME
+	}
+	db, err = sql.Open("mysql", driver)
+	if err != nil {
+		fmt.Printf("connect DB failed, err:%v\n", err)
+		return
+	}
+	db.SetMaxOpenConns(20)
+	db.SetMaxIdleConns(10)
+	return db, nil
+}
+
 func Oracle() (baseDB *sql.DB, err error) {
 	oracle := connect{
-		HOST:     "localhost",
+		HOST:     "192.168.0.7",
 		PORT:     "1521",
-		USERNAME: "root",
-		PASSWORD: "root",
+		USERNAME: "dbusrwx",
+		PASSWORD: "dbusrwx#321",
 		SID:      "orcl",
 	}
 	db, err := sql.Open("godror", `user="`+oracle.USERNAME+`" password="`+oracle.PASSWORD+`" connectString="`+oracle.HOST+`:`+oracle.PORT+`/`+oracle.SID+`"`)
