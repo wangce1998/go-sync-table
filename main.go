@@ -3,8 +3,10 @@ package main
 import (
 	"database/sql"
 	"fmt"
+	"math"
 	"reflect"
 	"strconv"
+	"sync"
 	"sync-data/utils"
 	"time"
 )
@@ -52,16 +54,38 @@ func main() {
 		return
 	}
 
-	for {
-		fmt.Println("开始同步库存关系 datetime", utils.DateTime())
-		handle()
-		time.Sleep(time.Second * 5)
-	}
-}
-
-func handle() {
 	thirdStocks := getThirdStocks()
 
+	var wg sync.WaitGroup
+
+	onceNum := 100
+	total := len(thirdStocks)
+	blockNum := int(math.Ceil(float64(len(thirdStocks) / onceNum)))
+	for i := 0; i < blockNum;i++ {
+		startIndex := i*onceNum
+		endIndex := (i + 1)*onceNum
+		if endIndex > total {
+			endIndex = total
+		}
+		item := thirdStocks[startIndex:endIndex]
+		wg.Add(1)
+		go func() {
+			handle(item)
+
+			defer wg.Done()
+		}()
+	}
+	wg.Wait()
+
+	/*for {
+		fmt.Println("开始同步库存关系 datetime", utils.DateTime())
+		thirdStocks := getThirdStocks()
+		handle(thirdStocks)
+		time.Sleep(time.Second * 5)
+	}*/
+}
+
+func handle(thirdStocks []ThirdStock) {
 	for _, thirdStock := range thirdStocks {
 		stock, err := CYGetDataByGoodsID(thirdStock.ShopID, thirdStock.GoodsID)
 		if err != nil {
