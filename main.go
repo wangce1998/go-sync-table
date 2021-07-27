@@ -195,7 +195,11 @@ func CYUpdate(id int64, stock Stock) {
 func CYBatchCreate(stocks []Stock) int64 {
 	sqlStr := "insert into sskc (shop_id, shop_name, goods_id, goods_name, bar_code, stock, price, last_up_time, created_at, updated_at) values "
 
+	t := time.Now().Unix()
 	for _, stock := range stocks {
+		stock.CreatedAt = t
+		stock.UpdatedAt = t
+		
 		sqlStr += fmt.Sprintf(
 			"(%s, '%s', '%s', '%s', '%s', %s, '%s', %s, %s, %s),",
 			strconv.FormatInt(stock.ShopID, 10),
