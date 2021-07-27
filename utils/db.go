@@ -83,7 +83,7 @@ func Oracle() (baseDB *sql.DB, err error) {
 		PORT:     "1521",
 		USERNAME: "dbusrwx",
 		PASSWORD: "dbusrwx#321",
-		SID:      "orcl",
+		SID:      "HAJXC",
 	}
 	db, err := sql.Open("godror", `user="`+oracle.USERNAME+`" password="`+oracle.PASSWORD+`" connectString="`+oracle.HOST+`:`+oracle.PORT+`/`+oracle.SID+`"`)
 	if err != nil {
