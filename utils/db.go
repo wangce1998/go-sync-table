@@ -44,7 +44,7 @@ func Mysql() (baseDB *sql.DB, err error) {
 		fmt.Printf("connect DB failed, err:%v\n", err)
 		return
 	}
-	db.SetMaxOpenConns(20)
+	db.SetMaxOpenConns(100)
 	db.SetMaxIdleConns(10)
 	return db, nil
 }
@@ -72,8 +72,8 @@ func CYMysql() (baseDB *sql.DB, err error) {
 		fmt.Printf("connect DB failed, err:%v\n", err)
 		return
 	}
-	db.SetMaxOpenConns(20)
-	db.SetMaxIdleConns(10)
+	db.SetMaxOpenConns(1000)
+	db.SetMaxIdleConns(500)
 	return db, nil
 }
 
