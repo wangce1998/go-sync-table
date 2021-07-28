@@ -5,29 +5,27 @@ import (
 )
 
 const (
-	FormatTemplate = "2006-01-02 15:04:05"
+	TimeLayout = "2006-01-02 15:04:05"
 )
 
 func DateTime() string {
-	return time.Unix(time.Now().Unix(), 0).Format(FormatTemplate)
+	return time.Unix(time.Now().Unix(), 0).Format(TimeLayout)
 }
 
 func FormatDateTime(t int64) string {
-	return time.Unix(t, 0).Format(FormatTemplate)
+	return time.Unix(t, 0).Format(TimeLayout)
 }
 
 func Format(timeStr string) string {
 	date, _ := time.Parse(time.RFC3339, timeStr)
 	t := time.Unix(date.In(time.Local).Unix(), 0)
 
-	return t.Format(FormatTemplate)
+	return t.Format(TimeLayout)
 }
 
-func FormatTime(timeStr string) int64 {
-	date, _ := time.Parse(time.RFC3339, timeStr)
-	t := time.Unix(date.In(time.Local).Unix(), 0)
-	str := t.Format(FormatTemplate)
-	stamp, _ := time.ParseInLocation(FormatTemplate, str, time.Local)
+func FormatTime(datetime string) int64 {
+	loc, _ := time.LoadLocation("Local")    //获取时区
+	tmp, _ := time.ParseInLocation(TimeLayout, datetime, loc)
 
-	return stamp.Unix()
+	return tmp.Unix()
 }

@@ -70,6 +70,7 @@ func handle(thirdStocks []kernel.ThirdStock) {
 				Price:      thirdStock.Price,
 				LastUpTime: utils.FormatTime(thirdStock.LastUpTime),
 			})
+			fmt.Println("更新数据ID:" + strconv.FormatInt(stock.ID, 10))
 		} else {
 			creates = append(creates, kernel.Stock{
 				ShopID:    thirdStock.ShopID,
@@ -79,10 +80,10 @@ func handle(thirdStocks []kernel.ThirdStock) {
 				BarCode:   thirdStock.BarCode,
 				Stock:     thirdStock.StockQty,
 				Price:     thirdStock.Price,
-				// LastUpTime: utils.FormatTime(thirdStock.LastUpTime),
+				LastUpTime: utils.FormatTime(thirdStock.LastUpTime),
 			})
 		}
 	}
 	num := kernel.CYBatchCreate(creates)
-	fmt.Println("插入数据:" + strconv.FormatInt(num, 10))
+	fmt.Println("批量插入数据:" + strconv.FormatInt(num, 10))
 }
