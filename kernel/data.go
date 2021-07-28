@@ -14,7 +14,7 @@ import (
 var thirdDB *sql.DB
 var cyDB *sql.DB
 
-func init()  {
+func init() {
 	var err error
 	thirdDB, err = utils.Oracle()
 	if err != nil {
@@ -39,7 +39,6 @@ func GetThirdStocks(startTime int64) []ThirdStock {
 		// oracle to_date('2018-04-18 10:10:06','yyyy-mm-dd hh24:mi:ss')
 		sqlStr += fmt.Sprintf(" where LASTUPTIME > to_date('%s', 'yyyy-mm-dd hh24:mi:ss')", utils.FormatDateTime(startTime))
 	}
-	fmt.Println("查询DB sql:" + sqlStr)
 
 	rows, err := thirdDB.Query(sqlStr)
 	if err != nil {
@@ -112,6 +111,9 @@ func CYUpdate(id int64, stock Stock) {
 }
 
 func CYBatchCreate(stocks []Stock) int64 {
+	if len(stocks) == 0 {
+		return 0
+	}
 	sqlStr := "insert into sskc (shop_id, shop_name, goods_id, goods_name, bar_code, stock, price, last_up_time, created_at, updated_at) values "
 
 	t := time.Now().Unix()
@@ -140,7 +142,7 @@ func CYBatchCreate(stocks []Stock) int64 {
 		fmt.Println("批量新增错误:" + err.Error())
 
 		var d1 = []byte(sqlStr)
-		_ = ioutil.WriteFile("./err" + strconv.FormatInt(time.Now().Unix(), 10) + ".sql", d1, 0666)
+		_ = ioutil.WriteFile("./err"+strconv.FormatInt(time.Now().Unix(), 10)+".sql", d1, 0666)
 
 		return 0
 	}
