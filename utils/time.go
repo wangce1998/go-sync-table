@@ -12,6 +12,10 @@ func DateTime() string {
 	return time.Unix(time.Now().Unix(), 0).Format(FormatTemplate)
 }
 
+func FormatDateTime(t int64) string {
+	return time.Unix(t, 0).Format(FormatTemplate)
+}
+
 func Format(timeStr string) string {
 	date, _ := time.Parse(time.RFC3339, timeStr)
 	t := time.Unix(date.In(time.Local).Unix(), 0)
