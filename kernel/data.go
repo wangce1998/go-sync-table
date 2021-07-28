@@ -3,7 +3,7 @@ package kernel
 import (
 	"database/sql"
 	"fmt"
-	"os"
+	"io/ioutil"
 	"reflect"
 	"strconv"
 	"strings"
@@ -39,6 +39,7 @@ func GetThirdStocks(startTime int64) []ThirdStock {
 		// oracle to_date('2018-04-18 10:10:06','yyyy-mm-dd hh24:mi:ss')
 		sqlStr += fmt.Sprintf(" where LASTUPTIME > to_date('%s', 'yyyy-mm-dd hh24:mi:ss')", utils.FormatDateTime(startTime))
 	}
+	fmt.Println("查询DB sql:" + sqlStr)
 
 	rows, err := thirdDB.Query(sqlStr)
 	if err != nil {
@@ -138,14 +139,8 @@ func CYBatchCreate(stocks []Stock) int64 {
 	if err != nil {
 		fmt.Println("批量新增错误:" + err.Error())
 
-		f, err := os.OpenFile("err-sql.txt", os.O_APPEND, 0666)
-		defer f.Close()
-		if err != nil {
-			fmt.Println("打开文件错误:" + err.Error())
-		} else {
-			_, _ = f.Write([]byte(sqlStr + "\n"))
-
-		}
+		var d1 = []byte(sqlStr)
+		_ = ioutil.WriteFile("./err" + strconv.FormatInt(time.Now().Unix(), 10) + ".sql", d1, 0666)
 
 		return 0
 	}

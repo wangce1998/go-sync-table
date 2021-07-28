@@ -16,43 +16,41 @@ func main() {
 		runTime        int64
 		lastUpdateTime int64
 	)
-	startTime = time.Now().Unix()
-	lastUpdateTime = 1625068800
 
-	thirdStocks := kernel.GetThirdStocks(lastUpdateTime)
+	for {
+		fmt.Println("开始同步库存关系:" + utils.DateTime())
 
-	var wg sync.WaitGroup
+		startTime = time.Now().Unix()
+		thirdStocks := kernel.GetThirdStocks(lastUpdateTime)
 
-	size := 1000
-	total := len(thirdStocks)
-	chunks := int(math.Ceil(float64(len(thirdStocks) / size)))
-	for i := 0; i <= chunks; i++ {
-		end := (i + 1) * size
-		if end > total {
-			end = total
+		var wg sync.WaitGroup
+
+		size := 1000
+		total := len(thirdStocks)
+		chunks := int(math.Ceil(float64(len(thirdStocks) / size)))
+		for i := 0; i <= chunks; i++ {
+			end := (i + 1) * size
+			if end > total {
+				end = total
+			}
+			item := thirdStocks[i*size : end]
+			wg.Add(1)
+			go func() {
+				handle(item)
+
+				defer wg.Done()
+			}()
 		}
-		item := thirdStocks[i*size : end]
-		wg.Add(1)
-		go func() {
-			handle(item)
+		wg.Wait()
 
-			defer wg.Done()
-		}()
-	}
-	wg.Wait()
+		t := time.Now().Unix()
+		lastUpdateTime = t
 
-	t := time.Now().Unix()
-	lastUpdateTime = t
+		runTime = t - startTime
+		fmt.Println("运行耗时:" + strconv.FormatInt(runTime, 10) + "秒")
 
-	runTime = t - startTime
-	fmt.Println("运行耗时:" + strconv.FormatInt(runTime, 10) + "秒")
-
-	/*for {
-		fmt.Println("开始同步库存关系 datetime", utils.DateTime())
-		thirdStocks := getThirdStocks()
-		handle(thirdStocks)
 		time.Sleep(time.Second * 5)
-	}*/
+	}
 }
 
 func handle(thirdStocks []kernel.ThirdStock) {
@@ -85,5 +83,6 @@ func handle(thirdStocks []kernel.ThirdStock) {
 			})
 		}
 	}
-	kernel.CYBatchCreate(creates)
+	num := kernel.CYBatchCreate(creates)
+	fmt.Println("插入数据:" + strconv.FormatInt(num, 10))
 }
