@@ -91,7 +91,6 @@ func CYUpdate(id int64, stock Stock) {
 		fmt.Println("更新sql创建错误:" + err.Error())
 		return
 	}
-	stock.LastUpTime = 0
 	stock.UpdatedAt = time.Now().Unix()
 	_, err = stmt.Exec(
 		stock.ShopName,
@@ -142,7 +141,7 @@ func CYBatchCreate(stocks []Stock) int64 {
 		fmt.Println("批量新增错误:" + err.Error())
 
 		var d1 = []byte(sqlStr)
-		_ = ioutil.WriteFile("./err"+strconv.FormatInt(time.Now().Unix(), 10)+".sql", d1, 0666)
+		_ = ioutil.WriteFile("./err-"+strconv.FormatInt(time.Now().Unix(), 10)+".sql", d1, 0666)
 
 		return 0
 	}
@@ -153,25 +152,6 @@ func CYBatchCreate(stocks []Stock) int64 {
 	}
 
 	return num
-
-	/*stmt, err := cyDB.Prepare("insert into sskc (shop_id, shop_name, goods_id, goods_name, bar_code, stock, price, last_up_time, created_at, updated_at) values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)")
-	if err != nil {
-		fmt.Println("新增sql创建错误", err.Error())
-		return 0
-	}
-	stock.LastUpTime = 0
-	tt := time.Now().Unix()
-	stock.CreatedAt = tt
-	stock.UpdatedAt = tt
-
-	exec, err := stmt.Exec(stock.ShopID, stock.ShopName, stock.GoodsID, stock.GoodsName, stock.BarCode, stock.Stock, stock.Price, stock.LastUpTime, stock.CreatedAt, stock.UpdatedAt)
-	if err != nil {
-		fmt.Println("新增错误", err.Error())
-		return 0
-	}
-	id, _ := exec.LastInsertId()
-
-	return id*/
 }
 
 func CYGetDataByGoodsID(shopID int64, goodsID string) (Stock, error) {
