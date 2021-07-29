@@ -14,7 +14,7 @@ import (
 var thirdDB *sql.DB
 var cyDB *sql.DB
 
-func init() {
+func ConnectDB() {
 	var err error
 	thirdDB, err = utils.Oracle()
 	if err != nil {
@@ -26,6 +26,11 @@ func init() {
 		fmt.Println("获取畅移数据库实例错误:" + err.Error())
 		return
 	}
+}
+
+func CloseDB() {
+	thirdDB.Close()
+	cyDB.Close()
 }
 
 func GetThirdStocks(startTime int64) []ThirdStock {

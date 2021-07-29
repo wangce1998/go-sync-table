@@ -25,6 +25,8 @@ func main() {
 
 		var wg sync.WaitGroup
 
+		kernel.ConnectDB()
+
 		size := 1000
 		total := len(thirdStocks)
 		chunks := int(math.Ceil(float64(len(thirdStocks) / size)))
@@ -43,13 +45,15 @@ func main() {
 		}
 		wg.Wait()
 
+		kernel.CloseDB()
+
 		t := time.Now().Unix()
 		lastUpdateTime = t
 
 		runTime = t - startTime
 		fmt.Println("运行耗时:" + strconv.FormatInt(runTime, 10) + "秒")
 
-		time.Sleep(time.Second * 5)
+		time.Sleep(time.Second * 60)
 	}
 }
 
@@ -70,7 +74,6 @@ func handle(thirdStocks []kernel.ThirdStock) {
 				Price:      thirdStock.Price,
 				LastUpTime: utils.FormatTime(thirdStock.LastUpTime),
 			})
-			fmt.Println("更新数据ID:" + strconv.FormatInt(stock.ID, 10))
 		} else {
 			creates = append(creates, kernel.Stock{
 				ShopID:    thirdStock.ShopID,
@@ -84,6 +87,5 @@ func handle(thirdStocks []kernel.ThirdStock) {
 			})
 		}
 	}
-	num := kernel.CYBatchCreate(creates)
-	fmt.Println("批量插入数据:" + strconv.FormatInt(num, 10))
+	kernel.CYBatchCreate(creates)
 }
