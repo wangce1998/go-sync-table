@@ -21,11 +21,11 @@ func main() {
 		fmt.Println("开始同步库存关系:" + utils.DateTime())
 
 		startTime = time.Now().Unix()
+
+		kernel.ConnectDB()
 		thirdStocks := kernel.GetThirdStocks(lastUpdateTime)
 
 		var wg sync.WaitGroup
-
-		kernel.ConnectDB()
 
 		size := 1000
 		total := len(thirdStocks)
