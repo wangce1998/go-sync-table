@@ -25,7 +25,11 @@ func main() {
 		kernel.ConnectDB()
 		thirdStocks := kernel.GetThirdStocks(lastUpdateTime)
 
-		var wg sync.WaitGroup
+		var (
+			addNum    int64
+			updateNum int64
+			wg        sync.WaitGroup
+		)
 
 		size := 1000
 		total := len(thirdStocks)
@@ -38,7 +42,9 @@ func main() {
 			item := thirdStocks[i*size : end]
 			wg.Add(1)
 			go func() {
-				handle(item)
+				an, un := handle(item)
+				addNum += an
+				updateNum += un
 
 				defer wg.Done()
 			}()
@@ -49,16 +55,22 @@ func main() {
 
 		t := time.Now().Unix()
 		lastUpdateTime = t
-
 		runTime = t - startTime
+
+		fmt.Println("新增数:" + strconv.FormatInt(addNum, 10) + " 更新数:" + strconv.FormatInt(updateNum, 10))
 		fmt.Println("运行耗时:" + strconv.FormatInt(runTime, 10) + "秒")
 
 		time.Sleep(time.Second * 60)
 	}
 }
 
-func handle(thirdStocks []kernel.ThirdStock) {
-	var creates []kernel.Stock
+func handle(thirdStocks []kernel.ThirdStock) (int64, int64) {
+	var (
+		addNum    int64
+		updateNum int64
+		creates   []kernel.Stock
+	)
+
 	for _, thirdStock := range thirdStocks {
 		stock, err := kernel.CYGetDataByGoodsID(thirdStock.ShopID, thirdStock.GoodsID)
 		if err != nil {
@@ -74,18 +86,21 @@ func handle(thirdStocks []kernel.ThirdStock) {
 				Price:      thirdStock.Price,
 				LastUpTime: utils.FormatTime(thirdStock.LastUpTime),
 			})
+			updateNum++
 		} else {
 			creates = append(creates, kernel.Stock{
-				ShopID:    thirdStock.ShopID,
-				ShopName:  thirdStock.ShopName,
-				GoodsID:   thirdStock.GoodsID,
-				GoodsName: thirdStock.GoodsName,
-				BarCode:   thirdStock.BarCode,
-				Stock:     thirdStock.StockQty,
-				Price:     thirdStock.Price,
+				ShopID:     thirdStock.ShopID,
+				ShopName:   thirdStock.ShopName,
+				GoodsID:    thirdStock.GoodsID,
+				GoodsName:  thirdStock.GoodsName,
+				BarCode:    thirdStock.BarCode,
+				Stock:      thirdStock.StockQty,
+				Price:      thirdStock.Price,
 				LastUpTime: utils.FormatTime(thirdStock.LastUpTime),
 			})
 		}
 	}
-	kernel.CYBatchCreate(creates)
+	addNum = kernel.CYBatchCreate(creates)
+
+	return addNum, updateNum
 }
