@@ -109,7 +109,7 @@ func CYUpdate(id int64, stock Stock) {
 	)
 	defer stmt.Close()
 	if err != nil {
-		fmt.Println("更新错误:" + err.Error())
+		fmt.Println("更新错误:" + err.Error(), stock)
 		return
 	}
 }
