@@ -85,7 +85,7 @@ func handle(thirdStocks []kernel.ThirdStock) (int64, int64) {
 				Stock:      thirdStock.StockQty,
 				Price:      thirdStock.Price,
 				LastUpTime: utils.FormatTime(thirdStock.LastUpTime),
-			})
+			}, thirdStock)
 			updateNum++
 		} else {
 			creates = append(creates, kernel.Stock{
