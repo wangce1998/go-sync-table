@@ -1,6 +1,7 @@
 package main
 
 import (
+	"encoding/json"
 	"fmt"
 	"math"
 	"strconv"
@@ -78,14 +79,20 @@ func handle(thirdStocks []kernel.ThirdStock) (int64, int64) {
 			continue
 		}
 		if stock.ID != 0 {
-			kernel.CYUpdate(stock.ID, kernel.Stock{
+			err = kernel.CYUpdate(stock.ID, kernel.Stock{
 				ShopName:   thirdStock.ShopName,
 				GoodsName:  thirdStock.GoodsName,
 				BarCode:    thirdStock.BarCode,
 				Stock:      thirdStock.StockQty,
 				Price:      thirdStock.Price,
 				LastUpTime: utils.FormatTime(thirdStock.LastUpTime),
-			}, thirdStock)
+			})
+			if err != nil {
+				b, _ := json.Marshal(thirdStock)
+
+				fmt.Println("更新错误:" + err.Error() + ",原始数据:" + string(b))
+				continue
+			}
 			updateNum++
 		} else {
 			creates = append(creates, kernel.Stock{

@@ -90,11 +90,11 @@ func GetThirdStocks(startTime int64) []ThirdStock {
 	return stocks
 }
 
-func CYUpdate(id int64, stock Stock, thirdStock ThirdStock) {
+func CYUpdate(id int64, stock Stock) error {
 	stmt, err := cyDB.Prepare("update sskc set shop_name = ?, goods_name = ?, bar_code = ?, stock = ?, price = ?, last_up_time = ?, updated_at = ? where id = ?")
 	if err != nil {
 		fmt.Println("更新sql创建错误:" + err.Error())
-		return
+		return err
 	}
 	stock.UpdatedAt = time.Now().Unix()
 	_, err = stmt.Exec(
@@ -109,9 +109,11 @@ func CYUpdate(id int64, stock Stock, thirdStock ThirdStock) {
 	)
 	defer stmt.Close()
 	if err != nil {
-		fmt.Println("更新错误:" + err.Error(), stock.LastUpTime, thirdStock)
-		return
+		fmt.Println("更新错误:" + err.Error())
+		return err
 	}
+
+	return nil
 }
 
 func CYBatchCreate(stocks []Stock) int64 {

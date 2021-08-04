@@ -24,6 +24,9 @@ func Format(timeStr string) string {
 }
 
 func FormatTime(datetime string) int64 {
+	if datetime == "0001-01-01 08:00:00" {
+		return 0
+	}
 	loc, _ := time.LoadLocation("Local")    //获取时区
 	tmp, _ := time.ParseInLocation(TimeLayout, datetime, loc)
 
