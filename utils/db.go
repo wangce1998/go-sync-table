@@ -5,9 +5,8 @@ import (
 	"fmt"
 	_ "github.com/go-sql-driver/mysql"
 	_ "github.com/godror/godror"
+	"time"
 )
-
-var db *sql.DB
 
 type connect struct {
 	HOST      string
@@ -19,34 +18,6 @@ type connect struct {
 	PARSETIME string
 	SID       string
 	Loc       string
-}
-
-func Mysql() (baseDB *sql.DB, err error) {
-	mysql := connect{
-		HOST:      "192.168.2.5",
-		PORT:      "3306",
-		DATABASE:  "sync_stock",
-		USERNAME:  "root",
-		PASSWORD:  "root",
-		CHARSET:   "utf8mb4",
-		PARSETIME: "True",
-		Loc: "Asia%2FShanghai",
-	}
-	driver := mysql.USERNAME + ":" + mysql.PASSWORD + "@" + "tcp(" + mysql.HOST + ":" + mysql.PORT + ")/" + mysql.DATABASE + "?charset=" + mysql.CHARSET
-	if mysql.Loc != "" {
-		driver += "&loc=" + mysql.Loc
-	}
-	if mysql.PARSETIME != "" {
-		driver += "&parseTime=" + mysql.PARSETIME
-	}
-	db, err = sql.Open("mysql", driver)
-	if err != nil {
-		fmt.Printf("connect DB failed, err:%v\n", err)
-		return
-	}
-	db.SetMaxOpenConns(100)
-	db.SetMaxIdleConns(10)
-	return db, nil
 }
 
 func CYMysql() (baseDB *sql.DB, err error) {
@@ -67,13 +38,14 @@ func CYMysql() (baseDB *sql.DB, err error) {
 	if mysql.PARSETIME != "" {
 		driver += "&parseTime=" + mysql.PARSETIME
 	}
-	db, err = sql.Open("mysql", driver)
+	db, err := sql.Open("mysql", driver)
 	if err != nil {
 		fmt.Printf("connect DB failed, err:%v\n", err)
 		return
 	}
 	db.SetMaxOpenConns(1000)
-	db.SetMaxIdleConns(500)
+	db.SetMaxIdleConns(10)
+	db.SetConnMaxLifetime(time.Second * 1)
 	return db, nil
 }
 
@@ -92,5 +64,6 @@ func Oracle() (baseDB *sql.DB, err error) {
 	}
 	db.SetMaxOpenConns(20)
 	db.SetMaxIdleConns(10)
+	db.SetConnMaxLifetime(time.Second * 1)
 	return db, nil
 }
