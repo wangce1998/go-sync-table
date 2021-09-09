@@ -35,13 +35,14 @@ func main() {
 		size := 1000
 		total := len(thirdStocks)
 		chunks := int(math.Ceil(float64(len(thirdStocks) / size)))
+		wg.Add(chunks)
 		for i := 0; i <= chunks; i++ {
 			end := (i + 1) * size
 			if end > total {
 				end = total
 			}
 			item := thirdStocks[i*size : end]
-			wg.Add(1)
+
 			go func() {
 				an, un := handle(item)
 				addNum += an
@@ -85,7 +86,7 @@ func handle(thirdStocks []kernel.ThirdStock) (int64, int64) {
 				BarCode:    thirdStock.BarCode,
 				Stock:      thirdStock.StockQty,
 				Price:      thirdStock.Price,
-				LastUpTime: utils.FormatTime(thirdStock.LastUpTime),
+				LastUpTime: thirdStock.LastUpTime,
 			})
 			if err != nil {
 				b, _ := json.Marshal(thirdStock)
@@ -103,7 +104,7 @@ func handle(thirdStocks []kernel.ThirdStock) (int64, int64) {
 				BarCode:    thirdStock.BarCode,
 				Stock:      thirdStock.StockQty,
 				Price:      thirdStock.Price,
-				LastUpTime: utils.FormatTime(thirdStock.LastUpTime),
+				LastUpTime: thirdStock.LastUpTime,
 			})
 		}
 	}

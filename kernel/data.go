@@ -82,8 +82,6 @@ func GetThirdStocks(startTime int64) []ThirdStock {
 			fmt.Println(err.Error())
 			continue
 		}
-
-		stock.LastUpTime = utils.Format(stock.LastUpTime)
 		stocks = append(stocks, *stock)
 	}
 

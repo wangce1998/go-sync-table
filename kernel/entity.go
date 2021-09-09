@@ -8,7 +8,7 @@ type ThirdStock struct {
 	BarCode    string `json:"bar_code" column:"BARCODE"`
 	StockQty   string `json:"stock_qty" column:"STOCKQTY"`
 	Price      string `json:"price" column:"PRICE"`
-	LastUpTime string `json:"last_up_time" column:"LASTUPTIME"`
+	LastUpTime int64  `json:"last_up_time" column:"LASTUPTIME"`
 }
 
 type Stock struct {
