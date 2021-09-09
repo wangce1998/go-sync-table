@@ -12,6 +12,8 @@ import (
 )
 
 func main() {
+	fmt.Println("同步库存即将执行")
+	
 	var (
 		startTime      int64
 		runTime        int64
