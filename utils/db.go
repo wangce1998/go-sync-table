@@ -45,7 +45,7 @@ func CYMysql() (baseDB *sql.DB, err error) {
 	}
 	db.SetMaxOpenConns(1000)
 	db.SetMaxIdleConns(10)
-	db.SetConnMaxLifetime(time.Second * 1)
+	db.SetConnMaxLifetime(time.Second * 10)
 	return db, nil
 }
 
@@ -64,6 +64,6 @@ func Oracle() (baseDB *sql.DB, err error) {
 	}
 	db.SetMaxOpenConns(20)
 	db.SetMaxIdleConns(10)
-	db.SetConnMaxLifetime(time.Second * 1)
+	db.SetConnMaxLifetime(time.Second * 10)
 	return db, nil
 }

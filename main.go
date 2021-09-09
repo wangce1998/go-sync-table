@@ -13,7 +13,7 @@ import (
 
 func main() {
 	fmt.Println("同步库存即将执行")
-	
+
 	var (
 		startTime      int64
 		runTime        int64
@@ -27,33 +27,34 @@ func main() {
 
 		kernel.ConnectDB()
 		thirdStocks := kernel.GetThirdStocks(lastUpdateTime)
-
 		var (
 			addNum    int64
 			updateNum int64
-			wg        sync.WaitGroup
 		)
+		if len(thirdStocks) > 0 {
+			var wg sync.WaitGroup
 
-		size := 1000
-		total := len(thirdStocks)
-		chunks := int(math.Ceil(float64(len(thirdStocks) / size)))
-		wg.Add(chunks)
-		for i := 0; i <= chunks; i++ {
-			end := (i + 1) * size
-			if end > total {
-				end = total
+			size := 1000
+			total := len(thirdStocks)
+			chunks := int(math.Ceil(float64(len(thirdStocks) / size)))
+			wg.Add(chunks)
+			for i := 0; i <= chunks; i++ {
+				end := (i + 1) * size
+				if end > total {
+					end = total
+				}
+				item := thirdStocks[i*size : end]
+
+				go func() {
+					an, un := handle(item)
+					addNum += an
+					updateNum += un
+
+					defer wg.Done()
+				}()
 			}
-			item := thirdStocks[i*size : end]
-
-			go func() {
-				an, un := handle(item)
-				addNum += an
-				updateNum += un
-
-				defer wg.Done()
-			}()
+			wg.Wait()
 		}
-		wg.Wait()
 
 		kernel.CloseDB()
 

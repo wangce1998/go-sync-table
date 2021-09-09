@@ -41,8 +41,7 @@ func GetThirdStocks(startTime int64) []ThirdStock {
 
 	sqlStr := "select SHOPID, SHOPNAME, GOODSID, GOODSNAME, BARCODE, STOCKQTY, PRICE, LASTUPTIME from VIEW_SSKC t"
 	if startTime != 0 {
-		// oracle to_date('2018-04-18 10:10:06','yyyy-mm-dd hh24:mi:ss')
-		sqlStr += fmt.Sprintf(" where LASTUPTIME > to_date('%s', 'yyyy-mm-dd hh24:mi:ss')", utils.FormatDateTime(startTime))
+		sqlStr += fmt.Sprintf(" where LASTUPTIME > %s", strconv.FormatInt(startTime, 10))
 	}
 
 	rows, err := thirdDB.Query(sqlStr)
