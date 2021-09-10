@@ -10,21 +10,24 @@ import (
 	"time"
 )
 
-func main() {
-	var (
-		startTime      int64
-		runTime        int64
-		lastUpdateTime int64
-		wg             sync.WaitGroup
-	)
+var (
+	startTime      int64
+	runTime        int64
+	lastUpdateTime int64
+	wg             sync.WaitGroup
+	third          = new(kernel.Third)
+	cy             = new(kernel.ChangYi)
+)
 
-	kernel.ConnectDB()
+func main() {
+
+	_ = third.ConnectDB()
+	_ = cy.ConnectDB()
 
 	for {
 		startTime = time.Now().Unix()
-		lastUpdateTime = 186561508
 
-		thirdStocks := kernel.GetThirdStocks(lastUpdateTime)
+		thirdStocks := third.GetStocks(lastUpdateTime)
 		var (
 			addNum    int64
 			updateNum int64
@@ -59,11 +62,14 @@ func main() {
 			fmt.Println("无增量数据,无需同步")
 		}
 
-		// kernel.CloseDB()
+		lastStock, err := cy.GetLastRow()
+		// 如果查询最后一条数据没有错误,进行增量同步,否则全量同步
+		if err == nil {
+			lastUpdateTime = lastStock.LastUpTime
+			fmt.Printf("下次从%v开始同步\n", lastUpdateTime)
+		}
 
-		t := time.Now().Unix()
-		lastUpdateTime = t
-		runTime = t - startTime
+		runTime = time.Now().Unix() - startTime
 
 		fmt.Println("新增数:" + strconv.FormatInt(addNum, 10) + " 更新数:" + strconv.FormatInt(updateNum, 10))
 		fmt.Println("运行耗时:" + strconv.FormatInt(runTime, 10) + "秒")
@@ -74,19 +80,19 @@ func main() {
 
 func handle(thirdStocks []kernel.ThirdStock) (int64, int64) {
 	var (
-		addNum    int64
-		updateNum int64
-		creates   []kernel.Stock
+		add     int64
+		update  int64
+		creates []kernel.Stock
 	)
 
 	for _, thirdStock := range thirdStocks {
-		stock, err := kernel.CYGetDataByGoodsID(thirdStock.ShopID, thirdStock.GoodsID)
+		stock, err := cy.GetDataByGoodsID(thirdStock.ShopID, thirdStock.GoodsID)
 		if err != nil {
 			fmt.Println("根据商品ID查询畅移数据错误:" + err.Error())
 			continue
 		}
 		if stock.ID != 0 {
-			err = kernel.CYUpdate(stock.ID, kernel.Stock{
+			err = cy.Update(stock.ID, kernel.Stock{
 				ShopName:   thirdStock.ShopName,
 				GoodsName:  thirdStock.GoodsName,
 				BarCode:    thirdStock.BarCode,
@@ -100,7 +106,7 @@ func handle(thirdStocks []kernel.ThirdStock) (int64, int64) {
 				fmt.Println("更新错误:" + err.Error() + ",原始数据:" + string(b))
 				continue
 			}
-			updateNum++
+			update++
 		} else {
 			creates = append(creates, kernel.Stock{
 				ShopID:     thirdStock.ShopID,
@@ -114,7 +120,7 @@ func handle(thirdStocks []kernel.ThirdStock) (int64, int64) {
 			})
 		}
 	}
-	addNum = kernel.CYBatchCreate(creates)
+	add = cy.BatchAdd(creates)
 
-	return addNum, updateNum
+	return add, update
 }

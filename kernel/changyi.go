@@ -11,83 +11,56 @@ import (
 	"time"
 )
 
-var thirdDB *sql.DB
 var cyDB *sql.DB
 
-func ConnectDB() {
-	var err error
-	thirdDB, err = utils.Oracle()
-	if err != nil {
-		fmt.Println("获取数据库实例错误:" + err.Error())
-		return
-	}
-	cyDB, err = utils.CYMysql()
-	if err != nil {
-		fmt.Println("获取畅移数据库实例错误:" + err.Error())
-		return
-	}
+type ChangYi struct {
 }
 
-func CloseDB() {
-	thirdDB.Close()
+func (cy *ChangYi) ConnectDB() error {
+	db, err := utils.CYMysql()
+	if err != nil {
+		fmt.Println("获取畅移数据库实例错误:" + err.Error())
+
+		return err
+	}
+	cyDB = db
+
+	return nil
+}
+
+func (cy *ChangYi) CloseDB() {
 	cyDB.Close()
 }
 
-func GetThirdStocks(startTime int64) []ThirdStock {
+func (cy *ChangYi) GetLastRow() (Stock, error) {
 	var (
-		stocks []ThirdStock
-		err    error
+		stock Stock
+		err   error
 	)
-
-	sqlStr := "select SHOPID, SHOPNAME, GOODSID, GOODSNAME, BARCODE, STOCKQTY, PRICE, LASTUPTIME from VIEW_SSKC t"
-	if startTime != 0 {
-		sqlStr += fmt.Sprintf(" where LASTUPTIME > %s", strconv.FormatInt(startTime, 10))
+	sqlStr := "SELECT last_up_time FROM sskc ORDER BY last_up_time DESC LIMIT 1"
+	res, err := cy.GetData(sqlStr)
+	if err != nil {
+		return stock, err
+	}
+	if len(res) > 0 {
+		stock = res[0]
 	}
 
-	rows, err := thirdDB.Query(sqlStr)
+	return stock, err
+}
+
+func (cy *ChangYi) GetData(sqlStr string) ([]Stock, error) {
+	rows, err := cyDB.Query(sqlStr)
 	if err != nil {
 		fmt.Println(err.Error())
-		return stocks
+		return nil, err
 	}
 	defer rows.Close()
 
-	cols, _ := rows.Columns()
-	// 这里表示一行所有列的值，用[]byte表示
-	vals := make([][]byte, len(cols))
-	// 这里表示一行填充数据
-	scans := make([]interface{}, len(cols))
-	// 这里scans引用vals，把数据填充到[]byte里
-	for k := range vals {
-		scans[k] = &vals[k]
-	}
-
-	for rows.Next() {
-		// 填充数据
-		err = rows.Scan(scans...)
-		if err != nil {
-			fmt.Println(err.Error())
-			continue
-		}
-		row := make(map[string]string)
-		for k, v := range vals {
-			key := cols[k]
-			row[key] = string(v)
-		}
-
-		stock := &ThirdStock{}
-
-		err = utils.Mapping(row, reflect.ValueOf(stock))
-		if err != nil {
-			fmt.Println(err.Error())
-			continue
-		}
-		stocks = append(stocks, *stock)
-	}
-
-	return stocks
+	return cy.Handle(rows), nil
 }
 
-func CYUpdate(id int64, stock Stock) error {
+func (cy *ChangYi) Update(id int64, stock Stock) error {
 	stmt, err := cyDB.Prepare("update sskc set shop_name = ?, goods_name = ?, bar_code = ?, stock = ?, price = ?, last_up_time = ?, updated_at = ? where id = ?")
 	if err != nil {
 		fmt.Println("更新sql创建错误:" + err.Error())
@@ -112,8 +85,7 @@ func CYUpdate(id int64, stock Stock) error {
 
 	return nil
 }
-
-func CYBatchCreate(stocks []Stock) int64 {
+func (cy *ChangYi) BatchAdd(stocks []Stock) int64 {
 	if len(stocks) == 0 {
 		return 0
 	}
@@ -158,12 +130,12 @@ func CYBatchCreate(stocks []Stock) int64 {
 	return num
 }
 
-func CYGetDataByGoodsID(shopID int64, goodsID string) (Stock, error) {
+func (cy *ChangYi) GetDataByGoodsID(shopID int64, goodsID string) (Stock, error) {
 	var (
 		stock Stock
 		err   error
 	)
-	res, err := getCYData("select id from sskc where shop_id = " + strconv.FormatInt(shopID, 10) + " and goods_id = " + goodsID)
+	res, err := cy.GetData("select id from sskc where shop_id = " + strconv.FormatInt(shopID, 10) + " and goods_id = " + goodsID)
 	if err != nil {
 		return stock, err
 	}
@@ -174,18 +146,7 @@ func CYGetDataByGoodsID(shopID int64, goodsID string) (Stock, error) {
 	return stock, err
 }
 
-func getCYData(sqlStr string) ([]Stock, error) {
-	rows, err := cyDB.Query(sqlStr)
-	if err != nil {
-		fmt.Println(err.Error())
-		return nil, err
-	}
-	defer rows.Close()
-
-	return CYHandle(rows), nil
-}
-
-func CYHandle(rows *sql.Rows) []Stock {
+func (cy *ChangYi) Handle(rows *sql.Rows) []Stock {
 	var err error
 	var stocks []Stock
 	cols, _ := rows.Columns()
