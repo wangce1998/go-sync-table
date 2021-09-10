@@ -7,13 +7,10 @@ import (
 	"strconv"
 	"sync"
 	"sync-data/kernel"
-	"sync-data/utils"
 	"time"
 )
 
 func main() {
-	fmt.Println("同步库存即将执行")
-
 	var (
 		startTime      int64
 		runTime        int64
@@ -21,8 +18,6 @@ func main() {
 	)
 
 	for {
-		fmt.Println("开始同步库存关系:" + utils.DateTime())
-
 		startTime = time.Now().Unix()
 
 		kernel.ConnectDB()
@@ -32,8 +27,9 @@ func main() {
 			updateNum int64
 		)
 		if len(thirdStocks) > 0 {
-			var wg sync.WaitGroup
+			fmt.Println("开始同步,数量:" + strconv.FormatInt(int64(len(thirdStocks)), 10))
 
+			var wg sync.WaitGroup
 			size := 1000
 			total := len(thirdStocks)
 			chunks := int(math.Ceil(float64(len(thirdStocks) / size)))
@@ -54,6 +50,8 @@ func main() {
 				}()
 			}
 			wg.Wait()
+		} else {
+			fmt.Println("无增量数据,无需同步")
 		}
 
 		kernel.CloseDB()
