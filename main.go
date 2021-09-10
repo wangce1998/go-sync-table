@@ -15,12 +15,15 @@ func main() {
 		startTime      int64
 		runTime        int64
 		lastUpdateTime int64
+		wg             sync.WaitGroup
 	)
+
+	kernel.ConnectDB()
 
 	for {
 		startTime = time.Now().Unix()
+		lastUpdateTime = 186561508
 
-		kernel.ConnectDB()
 		thirdStocks := kernel.GetThirdStocks(lastUpdateTime)
 		var (
 			addNum    int64
@@ -29,11 +32,10 @@ func main() {
 		if len(thirdStocks) > 0 {
 			fmt.Println("开始同步,数量:" + strconv.FormatInt(int64(len(thirdStocks)), 10))
 
-			var wg sync.WaitGroup
 			size := 1000
 			total := len(thirdStocks)
 			chunks := int(math.Ceil(float64(len(thirdStocks) / size)))
-			wg.Add(chunks)
+
 			for i := 0; i <= chunks; i++ {
 				end := (i + 1) * size
 				if end > total {
@@ -41,10 +43,13 @@ func main() {
 				}
 				item := thirdStocks[i*size : end]
 
+				wg.Add(1)
 				go func() {
-					an, un := handle(item)
-					addNum += an
-					updateNum += un
+					add, update := handle(item)
+					addNum += add
+					updateNum += update
+
+					fmt.Printf("单协程总处理数:%v,结果新增数:%v,更新数:%v\n", len(item), add, update)
 
 					defer wg.Done()
 				}()
@@ -54,7 +59,7 @@ func main() {
 			fmt.Println("无增量数据,无需同步")
 		}
 
-		kernel.CloseDB()
+		// kernel.CloseDB()
 
 		t := time.Now().Unix()
 		lastUpdateTime = t
